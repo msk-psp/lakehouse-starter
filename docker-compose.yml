@@ -1,0 +1,109 @@
+# LakeStart — self-hosted Iceberg lakehouse (free core)
+# Engine: DuckDB only (no Spark) — fewer moving parts, faster startup, testable.
+# TODO: pin minio / iceberg-rest image tags after first green CI run.
+
+name: lakestart
+
+services:
+  # ── S3-compatible object storage (the data lake) ────────────────────────
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-admin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-password}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      retries: 20
+
+  # ── One-shot: create the warehouse bucket ───────────────────────────────
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 ${S3_ACCESS_KEY:-admin} ${S3_SECRET_KEY:-password} &&
+      mc mb -p local/${WAREHOUSE_BUCKET:-warehouse} &&
+      echo 'bucket ready';
+      "
+
+  # ── One-shot: the catalog volume must be writable by uid 1000 (iceberg) ─
+  catalog-init:
+    image: busybox:1.36
+    command: chown 1000:1000 /catalog
+    volumes:
+      - catalog-data:/catalog
+
+  # ── Iceberg REST catalog (SQLite file backend on a volume) ──────────────
+  # The fixture image bundles only the SQLite JDBC driver; a Postgres-backed
+  # HA catalog is part of the Production Pack (docs/PRO.md).
+  iceberg-rest:
+    image: apache/iceberg-rest-fixture:latest
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+      catalog-init:
+        condition: service_completed_successfully
+    ports:
+      - "8181:8181"
+    environment:
+      CATALOG_WAREHOUSE: s3://${WAREHOUSE_BUCKET:-warehouse}/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      CATALOG_CATALOG__IMPL: org.apache.iceberg.jdbc.JdbcCatalog
+      CATALOG_URI: jdbc:sqlite:file:/catalog/catalog.db?journal_mode=WAL
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-admin}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-password}
+      AWS_REGION: us-east-1
+    volumes:
+      - catalog-data:/catalog
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8181/v1/config -o /dev/null"]
+      interval: 5s
+      retries: 30
+
+  # ── Browser SQL over Iceberg ────────────────────────────────────────────
+  duckdb-ui:
+    build: ./images/duckdb-ui
+    depends_on:
+      iceberg-rest:
+        condition: service_healthy
+    environment:
+      ICEBERG_REST_URL: http://iceberg-rest:8181
+      # DuckDB's S3 secret wants host:port WITHOUT scheme (unlike pyiceberg).
+      S3_ENDPOINT: minio:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-admin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-password}
+    ports:
+      - "4213:4213"
+    volumes:
+      - duckdb-data:/data
+
+  # ── One-shot: seed sample data into bronze (run via `make seed`) ────────
+  seed:
+    build: ./images/seed
+    profiles: ["seed"]
+    depends_on:
+      iceberg-rest:
+        condition: service_healthy
+    environment:
+      ICEBERG_REST_URL: http://iceberg-rest:8181
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-admin}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-password}
+    volumes:
+      - ./seed:/app/seed:ro
+
+volumes:
+  minio-data:
+  catalog-data:
+  duckdb-data:

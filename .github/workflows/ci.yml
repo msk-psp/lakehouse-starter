@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly run catches upstream image rot even when the repo is idle.
+    - cron: "0 3 * * 1"
+
+jobs:
+  unit:
+    name: unit tests (transform logic)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run pytest -v
+
+  smoke:
+    name: smoke test (full stack)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run end-to-end smoke test
+        run: ./scripts/smoke.sh
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs
