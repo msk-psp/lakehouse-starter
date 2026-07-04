@@ -24,4 +24,18 @@ if [ "${COUNT}" != "5" ]; then
   exit 1
 fi
 
-echo "==> SMOKE PASSED ✅  (storage + catalog + query engine all wired)"
+echo "==> Materializing silver + gold (make transform)..."
+./scripts/transform.sh >/dev/null
+
+echo "==> Verifying gold layer..."
+GOLD=$(docker compose exec -T duckdb-ui duckdb -init /etc/duckdb/attach.sql -noheader -list \
+  -c "SELECT count(*) || ':' || sum(purchases) FROM warehouse.gold.daily_activity;" \
+  | grep -E '^[0-9]+:[0-9]+$' | tail -1)
+
+echo "    gold rows:purchases = ${GOLD}"
+if [ "${GOLD}" != "5:2" ]; then
+  echo "SMOKE FAILED: expected gold '5:2', got '${GOLD}'" >&2
+  exit 1
+fi
+
+echo "==> SMOKE PASSED ✅  (storage + catalog + engine + medallion transforms all wired)"

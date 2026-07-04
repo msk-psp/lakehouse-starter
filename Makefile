@@ -1,4 +1,4 @@
-.PHONY: up down seed sql test smoke logs ps clean
+.PHONY: up down seed transform sql test smoke logs ps clean
 
 ## up: start the whole lakehouse
 up:
@@ -18,6 +18,10 @@ down:
 ## seed: load sample data into the bronze layer
 seed:
 	docker compose run --rm --build seed
+
+## transform: materialize silver + gold Iceberg tables from bronze
+transform:
+	./scripts/transform.sh
 
 ## sql: where to run queries
 sql:

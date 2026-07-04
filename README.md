@@ -44,7 +44,8 @@ git clone <this-repo> && cd lakehouse-starter
 cp .env.example .env
 make up        # brings up the whole lakehouse
 make seed      # loads sample data into bronze (via pyiceberg)
-make sql       # → open http://localhost:4213, run: SELECT * FROM warehouse.bronze.events;
+make transform # materializes silver + gold Iceberg tables from bronze
+make sql       # → open http://localhost:4213, run: SELECT * FROM warehouse.gold.daily_activity;
 ```
 
 ---
@@ -58,8 +59,9 @@ gets caught even when the repo is idle):
    `transforms/` runs against in-memory DuckDB with known inputs and asserted outputs.
    The *same files* are executed in the live stack, so green = the logic is right.
 2. **Smoke test** (`make smoke`, docker) — brings up the full stack, seeds bronze
-   through the REST catalog, then queries it back through DuckDB using the exact
-   wiring the UI uses. Green = storage + catalog + engine are correctly plumbed.
+   through the REST catalog, materializes silver + gold, then queries the gold layer
+   back through DuckDB using the exact wiring the UI uses. Green = storage + catalog
+   + engine + transforms are correctly plumbed, end to end.
 
 ---
 
@@ -82,7 +84,7 @@ query   │  DuckDB UI   │────────────────┤
 ```text
 docker-compose.yml     The whole lakehouse
 .env.example           Config you copy to .env
-Makefile               up / seed / sql / test / smoke
+Makefile               up / seed / transform / sql / test / smoke
 seed/                  Sample data loader (pyiceberg)
 transforms/            Medallion SQL (bronze → silver → gold), unit-tested
 tests/                 pytest suite for the transforms
