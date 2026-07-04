@@ -135,7 +135,7 @@ different job — that's the **[Production Pack](docs/PRO.md)**:
 | `make seed` fails with connection errors | The catalog wasn't healthy yet. `make ps` to check, then retry — `depends_on` guards this, but a very slow machine can race it. |
 | Want to start over | `make clean` (deletes all data volumes), then `make up`. |
 
-Still stuck? [Open an issue](https://github.com/msk-psp/lakehouse-starter/issues) with `docker compose logs` output — logs contain no secrets beyond your local `.env`.
+Run `make doctor` first — it pinpoints the broken layer. Still stuck? [Open an issue](https://github.com/msk-psp/lakehouse-starter/issues) with `docker compose logs` output — logs contain no secrets beyond your local `.env`.
 
 ## License
 

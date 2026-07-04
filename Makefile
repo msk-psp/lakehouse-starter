@@ -1,4 +1,4 @@
-.PHONY: up down seed transform sql test smoke logs ps clean
+.PHONY: up down seed transform sql test smoke doctor logs ps clean
 
 ## up: start the whole lakehouse
 up:
@@ -34,6 +34,10 @@ test:
 ## smoke: full end-to-end integrity check (needs docker)
 smoke:
 	./scripts/smoke.sh
+
+## doctor: diagnose a running (or broken) stack layer by layer
+doctor:
+	./scripts/doctor.sh
 
 ## logs: tail all logs
 logs:

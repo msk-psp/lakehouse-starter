@@ -38,4 +38,17 @@ if [ "${GOLD}" != "5:2" ]; then
   exit 1
 fi
 
-echo "==> SMOKE PASSED ✅  (storage + catalog + engine + medallion transforms all wired)"
+echo "==> Verifying bring-your-own-data path (CSV -> Iceberg)..."
+BYO=$(docker compose exec -T duckdb-ui duckdb -init /etc/duckdb/attach.sql -noheader -list -c "
+DROP TABLE IF EXISTS warehouse.bronze.smoke_weather;
+CREATE TABLE warehouse.bronze.smoke_weather AS SELECT * FROM '/data/local/example_weather.csv';
+SELECT count(*) FROM warehouse.bronze.smoke_weather;
+" | grep -E '^[0-9]+$' | tail -1)
+
+echo "    weather rows loaded: ${BYO}"
+if [ "${BYO}" != "3" ]; then
+  echo "SMOKE FAILED: expected 3 weather rows, got '${BYO}'" >&2
+  exit 1
+fi
+
+echo "==> SMOKE PASSED ✅  (storage + catalog + engine + transforms + BYO-data all wired)"
