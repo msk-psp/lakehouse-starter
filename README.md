@@ -4,7 +4,7 @@
 > no cloud vendor, no lock-in, no $2k AWS bill to learn on.
 > `docker compose up` → first `SELECT *` in **5 minutes**, not 5 days.
 
-[![ci](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml)
+[![ci](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml) · **[한국어](README.ko.md)**
 
 ![Demo: browsing the Iceberg catalog and querying the gold layer](docs/img/demo.gif)
 *Browser SQL over real Iceberg tables (REST catalog + MinIO underneath) — this is `make up && make seed && make transform`, nothing else.*
@@ -124,6 +124,18 @@ different job — that's the **[Production Pack](docs/PRO.md)**:
 - Operational **runbooks**
 
 → Built by an engineer who runs exactly this stack in production. See [docs/PRO.md](docs/PRO.md).
+
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---|---|
+| `make up` fails with port errors | Something else is on 4213 / 8181 / 9000-9001 / 5432. Stop it or edit the port mappings in `docker-compose.yml`. |
+| UI at :4213 loads but is blank for a few seconds | First page load fetches the UI app from `ui.duckdb.org`. It needs outbound internet once; after that it's cached. |
+| `Initialization Error` in the UI | Usually a stale browser tab from a previous run — hard-refresh. If it persists, `docker compose logs duckdb-ui` and open an issue. |
+| `make seed` fails with connection errors | The catalog wasn't healthy yet. `make ps` to check, then retry — `depends_on` guards this, but a very slow machine can race it. |
+| Want to start over | `make clean` (deletes all data volumes), then `make up`. |
+
+Still stuck? [Open an issue](https://github.com/msk-psp/lakehouse-starter/issues) with `docker compose logs` output — logs contain no secrets beyond your local `.env`.
 
 ## License
 
