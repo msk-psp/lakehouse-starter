@@ -1,13 +1,14 @@
 # LakeStart — self-hosted Iceberg lakehouse (free core)
 # Engine: DuckDB only (no Spark) — fewer moving parts, faster startup, testable.
-# TODO: pin minio / iceberg-rest image tags after first green CI run.
+# Images are pinned by digest to the exact versions the smoke test verified.
+# To upgrade: bump a digest, run `make smoke`, commit if green.
 
 name: lakestart
 
 services:
   # ── S3-compatible object storage (the data lake) ────────────────────────
   minio:
-    image: minio/minio:latest
+    image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${S3_ACCESS_KEY:-admin}
@@ -24,7 +25,7 @@ services:
 
   # ── One-shot: create the warehouse bucket ───────────────────────────────
   minio-init:
-    image: minio/mc:latest
+    image: minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
     depends_on:
       minio:
         condition: service_healthy
@@ -46,7 +47,7 @@ services:
   # The fixture image bundles only the SQLite JDBC driver; a Postgres-backed
   # HA catalog is part of the Production Pack (docs/PRO.md).
   iceberg-rest:
-    image: apache/iceberg-rest-fixture:latest
+    image: apache/iceberg-rest-fixture@sha256:db8de90b5b7693d4ac334c336f91d9bbe320d7b19f4f514d26de84cdfbcbfe8d
     depends_on:
       minio-init:
         condition: service_completed_successfully

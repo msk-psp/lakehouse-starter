@@ -1,7 +1,9 @@
 # DuckDB CLI + browser UI, single-responsibility image.
 FROM ubuntu:24.04
 
-ARG DUCKDB_VERSION=1.4.1
+# Keep close to latest: the UI web app is served from ui.duckdb.org (always newest)
+# and an old ui extension can fail its handshake with 401s on /localToken.
+ARG DUCKDB_VERSION=1.5.4
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

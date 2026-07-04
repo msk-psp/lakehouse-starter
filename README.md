@@ -6,6 +6,9 @@
 
 [![ci](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml)
 
+![DuckDB UI querying an Iceberg table](docs/img/duckdb-ui-query.png)
+*Browser SQL over a real Iceberg table (REST catalog + MinIO underneath) — this is `make up && make seed`, nothing else.*
+
 ---
 
 ## Why this exists
@@ -29,8 +32,7 @@ Everything here is **open source (Apache-2.0)** and runs on a laptop.
 | Component | What it does | Port |
 |---|---|---|
 | **MinIO** | S3-compatible object storage (your data lake) | `9000` / console `9001` |
-| **Iceberg REST catalog** | The table catalog every engine talks to | `8181` |
-| **PostgreSQL** | Catalog metadata backend | `5432` |
+| **Iceberg REST catalog** | The table catalog every engine talks to (embedded SQLite backend) | `8181` |
 | **DuckDB UI** | Browser SQL over your Iceberg tables — the only engine you need | `4213` |
 | **Medallion transforms** | Bronze → Silver → Gold SQL, unit-tested | — |
 
@@ -68,7 +70,7 @@ gets caught even when the repo is idle):
 seed    │  pyiceberg   │─────▶│  Iceberg REST     │
 ──────▶ └──────────────┘      │  catalog (:8181)  │
                               └─────────┬─────────┘
-        ┌──────────────┐                │ metadata → PostgreSQL
+        ┌──────────────┐                │ metadata → SQLite (embedded)
 query   │  DuckDB UI   │────────────────┤
 ◀────── │  (:4213)     │                │ data → MinIO / S3 (:9000)
         └──────────────┘                ▼

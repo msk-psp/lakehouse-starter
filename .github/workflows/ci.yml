@@ -13,8 +13,8 @@ jobs:
     name: unit tests (transform logic)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v8
       - run: uv sync
       - run: uv run pytest -v
 
@@ -22,7 +22,7 @@ jobs:
     name: smoke test (full stack)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run end-to-end smoke test
         run: ./scripts/smoke.sh
       - name: Dump logs on failure
