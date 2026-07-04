@@ -1,4 +1,4 @@
-.PHONY: up down seed transform sql test smoke doctor logs ps clean
+.PHONY: up down seed transform sql test smoke doctor inspect logs ps clean
 
 ## up: start the whole lakehouse
 up:
@@ -38,6 +38,10 @@ smoke:
 ## doctor: diagnose a running (or broken) stack layer by layer
 doctor:
 	./scripts/doctor.sh
+
+## inspect: X-ray the lakehouse — per-table snapshots, files, sizes
+inspect:
+	docker compose run --rm --build --entrypoint python seed /app/seed/inspect_tables.py
 
 ## logs: tail all logs
 logs:

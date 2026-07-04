@@ -62,6 +62,9 @@ SELECT * FROM '/data/local/example_weather.csv';
 That's a real Iceberg table now — schema inferred, stored on MinIO, visible to any
 engine that speaks the REST catalog. An example CSV ships in `data/`.
 
+Curious what Iceberg is doing underneath? `make inspect` prints per-table
+snapshots, data files, and sizes — watch them change as you seed and transform.
+
 ---
 
 ## Trust: how you know this actually works
@@ -98,7 +101,7 @@ query   │  DuckDB UI   │────────────────┤
 ```text
 docker-compose.yml     The whole lakehouse
 .env.example           Config you copy to .env
-Makefile               up / seed / transform / sql / test / smoke
+Makefile               up / seed / transform / sql / test / smoke / doctor / inspect
 seed/                  Sample data loader (pyiceberg)
 transforms/            Medallion SQL (bronze → silver → gold), unit-tested
 tests/                 pytest suite for the transforms
