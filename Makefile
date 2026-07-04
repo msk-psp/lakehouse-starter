@@ -1,4 +1,9 @@
-.PHONY: up down seed transform sql test smoke doctor inspect logs ps clean
+.PHONY: help up down seed transform sql test smoke doctor inspect logs ps clean
+
+## help: list all commands
+help:
+	@grep -E '^## ' Makefile | sed 's/^## /  make /'
+.DEFAULT_GOAL := help
 
 ## up: start the whole lakehouse
 up:
