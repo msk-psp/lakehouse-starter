@@ -1,5 +1,9 @@
 .env
 *.duckdb
+# user-dropped data files (keep the shipped examples)
+data/*
+!data/example_weather.csv
+!data/README.txt
 dbt/target/
 dbt/logs/
 __pycache__/

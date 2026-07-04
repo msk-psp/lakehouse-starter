@@ -50,6 +50,20 @@ make sql       # → open http://localhost:4213, run: SELECT * FROM warehouse.go
 
 ---
 
+## Bring your own data
+
+Drop any CSV / Parquet / JSON file into `./data/`, then in the UI (or `duckdb` CLI):
+
+```sql
+CREATE TABLE warehouse.bronze.weather AS
+SELECT * FROM '/data/local/example_weather.csv';
+```
+
+That's a real Iceberg table now — schema inferred, stored on MinIO, visible to any
+engine that speaks the REST catalog. An example CSV ships in `data/`.
+
+---
+
 ## Trust: how you know this actually works
 
 Two test layers, both in CI on every push **and weekly** (so upstream image drift

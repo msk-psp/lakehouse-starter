@@ -88,6 +88,9 @@ services:
       - "4213:4213"
     volumes:
       - duckdb-data:/data
+      # Drop CSV/Parquet files into ./data on the host, then load them from the
+      # UI: CREATE TABLE warehouse.bronze.t AS SELECT * FROM '/data/local/file.csv';
+      - ./data:/data/local:ro
 
   # ── One-shot: seed sample data into bronze (run via `make seed`) ────────
   seed:
