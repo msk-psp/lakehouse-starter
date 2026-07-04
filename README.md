@@ -6,8 +6,8 @@
 
 [![ci](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/msk-psp/lakehouse-starter/actions/workflows/ci.yml)
 
-![DuckDB UI querying an Iceberg table](docs/img/duckdb-ui-query.png)
-*Browser SQL over a real Iceberg table (REST catalog + MinIO underneath) — this is `make up && make seed`, nothing else.*
+![Demo: browsing the Iceberg catalog and querying the gold layer](docs/img/demo.gif)
+*Browser SQL over real Iceberg tables (REST catalog + MinIO underneath) — this is `make up && make seed && make transform`, nothing else.*
 
 ---
 
