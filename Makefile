@@ -9,7 +9,7 @@ up:
 	@echo "    Iceberg REST  : http://localhost:8181"
 	@echo "    DuckDB UI     : http://localhost:4213"
 	@echo ""
-	@echo "  Next: make seed   then   make sql"
+	@echo "  Next: make seed  →  make transform  →  make sql"
 
 ## down: stop everything (keeps data)
 down:
@@ -25,7 +25,7 @@ transform:
 
 ## sql: where to run queries
 sql:
-	@echo "Open http://localhost:4213 and run:  SELECT * FROM warehouse.bronze.events;"
+	@echo "Open http://localhost:4213 and run:  SELECT * FROM warehouse.gold.daily_activity;"
 
 ## test: fast local unit tests (no docker needed)
 test:

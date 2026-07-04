@@ -20,6 +20,10 @@ RUN apt-get update && \
     chmod +x /usr/local/bin/duckdb && \
     rm /tmp/duckdb.zip
 
+# Pre-install extensions at build time so container startup is instant
+# (otherwise every start re-downloads iceberg/httpfs/ui).
+RUN duckdb -c "INSTALL iceberg; INSTALL httpfs; INSTALL ui;"
+
 COPY attach.sql /etc/duckdb/attach.sql
 COPY init.sql /etc/duckdb/init.sql
 COPY entrypoint.sh /usr/local/bin/duckdb-ui-entrypoint
